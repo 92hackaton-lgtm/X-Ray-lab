@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>X-Ray Lab · From Photon to Decision</title>
+<style>
+:root{--bg:#070b14;--card:#0f1726;--line:#1e2b45;--tx:#e6edf7;--mut:#8a9bb8;--cy:#4fd1ff;--am:#ffb547;--gr:#5af0b0;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:calc(54px + env(safe-area-inset-top,0px));scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(900px 500px at 85% -5%,#0e2a44 0,transparent 60%),var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:#070b14ee;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;gap:4px;align-items:center;padding:8px 12px;overflow-x:auto;white-space:nowrap}
+nav b{color:var(--cy);margin-right:8px}
+nav a,nav button{color:var(--mut);font-size:14px;padding:5px 10px;border-radius:8px;cursor:pointer;text-decoration:none;background:none;border:0}
+nav button{background:var(--cy);color:#021019;font-weight:700;margin-left:auto}
+.wrap{max-width:980px;margin:auto;padding:16px 18px}
+@media(max-width:720px){.hero,.ex{grid-template-columns:1fr!important}}
+.badge{display:inline-block;font-size:12px;color:var(--am);border:1px solid #5a4320;background:#2a1f0c;padding:3px 10px;border-radius:99px}
+h1{font-size:clamp(40px,9vw,64px);line-height:1;margin:12px 0 8px;letter-spacing:-1.5px}
+h1 span{color:var(--cy);text-shadow:0 0 24px #4fd1ff66}
+.lead{font-size:18px;margin:0 0 12px}
+.chips a,.k{color:var(--cy);cursor:pointer;border-bottom:1px dotted var(--cy);text-decoration:none}
+h2{font-size:27px;margin:48px 0 4px}
+.sub{color:var(--mut);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px}
+.card .n{color:var(--cy);font-weight:800;font-size:12px;letter-spacing:1px}
+.card h3{margin:3px 0;font-size:17px}
+.card p{margin:0;color:var(--mut);font-size:14.5px}
+code{background:#0a2236;color:var(--gr);padding:2px 6px;border-radius:6px;font-size:13px}
+.memo{border:1px solid #1d4a6b;background:linear-gradient(135deg,#0c2236,#0f1726);border-radius:16px;padding:14px;margin-top:22px}
+.memo>b{color:var(--am);font-size:12px;letter-spacing:1px}
+canvas.sim{width:100%;max-width:520px;background:#050912;border:1px solid var(--line);border-radius:12px}
+.sl{display:flex;align-items:center;gap:10px;font-size:14px;margin:6px 0}.sl input{flex:1}.sl b{min-width:40px;color:var(--am)}
+.ex{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:16px}
+.ex canvas,#cv{width:100%;max-width:360px;display:block;border-radius:12px;border:1px solid var(--line);cursor:crosshair;touch-action:manipulation}
+.insp{font:14.5px/1.4 system-ui,sans-serif;color:var(--tx);min-height:20px;margin-top:6px}.insp b{color:var(--cy)}.insp small{display:block;margin-top:3px;color:var(--mut);font:11.5px ui-monospace,monospace}
+.guide{background:var(--card);border-left:3px solid var(--cy);border-radius:8px;padding:9px 12px;font-size:14.5px;margin:8px 0}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.row button,.cta{flex:1;background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px 6px;cursor:pointer;font-size:13.5px}
+.row button.on,.row button.go,.cta{background:var(--cy);color:#021019;border-color:var(--cy);font-weight:700}
+.cta{flex:none;padding:12px 22px;border-radius:99px;font-size:16px;margin-top:14px}
+.meter{display:flex;gap:8px;margin:6px 0}.meter div{flex:1;text-align:center;border-radius:10px;padding:6px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--mut)}.meter b{display:block;font-size:20px}
+.res{display:grid;gap:6px}.res .card{padding:9px;font-size:13.5px}
+.ok{color:var(--gr)}.bad{color:var(--am)}
+.ev{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mut)}.ev i{width:70px;font-style:normal}.ev u{flex:1;height:5px;background:#1b2740;border-radius:3px;display:block}.ev s{display:block;height:100%;background:var(--cy);border-radius:3px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-bottom:8px}summary{cursor:pointer;font-weight:600}details p{color:var(--mut);margin:6px 0 0;font-size:14.5px}
+.gl .card{scroll-margin-top:80px}
+.flash{animation:fl 1.6s}@keyframes fl{0%,60%{box-shadow:0 0 0 2px var(--cy),0 0 28px #4fd1ff88;border-color:var(--cy)}}
+header.top h1{font-size:clamp(30px,7vw,44px);margin:8px 0 4px}.io{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;margin:10px 0 14px;font-size:13px}.io>div{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 9px;color:var(--mut)}.io i{display:block;font-style:normal;color:var(--cy);font-weight:800;font-size:11px;letter-spacing:1px}.io>b{align-self:center;color:var(--cy)}
+@media(max-width:720px){.ex canvas{max-width:230px;margin:auto}.ex{gap:8px}}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:10px}th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}th{color:var(--cy);background:var(--card)}td:first-child{color:var(--am);font-weight:600}.fail .card button{margin-top:8px;background:var(--cy);color:#021019;font-weight:700;border:0;border-radius:8px;padding:6px 12px;cursor:pointer}
+.foot{color:var(--mut);font-size:13px;margin:36px 0 10px;border-top:1px solid var(--line);padding-top:14px}
+#game{position:fixed;inset:0;background:var(--bg);z-index:50;overflow:auto;padding:calc(10px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px))}
+#game[hidden]{display:none}
+.gh{display:flex;justify-content:space-between;align-items:center;max-width:560px;margin:auto}
+.gh button{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer}
+.gb{max-width:560px;margin:8px auto}#cv{margin:8px auto}
+</style></head><body>
+<nav><b>X-RAY LAB</b><a data-go="memo">Memo</a><a data-go="learn">Physics</a><a data-go="explore">Explorer</a><a data-go="fails">Failures</a><a data-go="meanings">Meanings</a><a data-go="honest">Honest</a><button onclick="openGame()">▶ Play</button></nav>
+<div class="wrap">
+<header class="top"><span class="badge">Educational simulation · synthetic images · not a diagnosis</span>
+<h1>X-Ray <span>Lab</span></h1>
+<p class="lead"><b>Drag the sliders.</b> The computer finds the bright spot by comparing every pixel with its neighbours, and shows you why.</p>
+<div class="io"><div><i>INPUT</i>image · R · T · spot brightness · noise</div><b>→</b><div><i>PROCESS</i>pixel − neighbour average, then size and shape rules</div><b>→</b><div><i>OUTPUT</i>flagged spots + a reason for each</div></div></header>
+<section id="explore"><div class="ex">
+ <div><canvas id="exC" width="300" height="360"></canvas><div class="insp" id="exI">Tap the image to learn what you touched</div></div>
+ <div>
+  <div class="row" id="exT"></div>
+  <div class="guide" id="exH"></div>
+  <div class="sl">Window R<input id="sR" type="range" min="5" max="40" value="14" oninput="E.R=+this.value;exUI()"><b id="rv">14</b></div>
+  <div class="sl">Threshold T<input id="sT" type="range" min="4" max="40" value="28" oninput="E.T=+this.value;exUI()"><b id="tv">28</b></div>
+  <div class="sl">Spot brightness<input id="sG" type="range" min="6" max="60" value="42" oninput="E.gain=+this.value;regen()"><b id="gv">42</b></div>
+  <div class="sl">Noise<input id="sN" type="range" min="0" max="30" value="14" oninput="E.noise=+this.value;regen()"><b id="nv">14</b></div>
+  <div class="meter"><div>Real spots found<b id="m1">–</b></div><div>False alarms<b id="m2">–</b></div></div>
+  <div class="guide" id="exWhy" style="border-color:var(--gr)"></div>
+  <div class="res" id="exR"></div>
+  <div class="row"><button onclick="setCase(E,E.cs+1);exUI()">New X-ray ⟳</button><button class="go" onclick="openGame()">Doctor vs Algorithm ▶</button></div>
+ </div>
+</div>
+
+</section>
+
+
+<section class="memo" id="memo"><b>PROJECT BRIEF · 30 SECONDS</b>
+ <div class="grid" style="margin-top:8px">
+  <div><h3 style="margin:0">The question</h3><p style="margin:2px 0;color:var(--mut)">X-rays reveal what the eye cannot. How does a machine turn invisible radiation into a measurable decision?</p></div>
+  <div><h3 style="margin:0">The physics</h3><p style="margin:2px 0;color:var(--mut)"><a class="k" data-k="photon">Photons</a> cross the body; dense tissue <a class="k" data-k="absorb">absorbs</a> more, so the <a class="k" data-k="detector">detector</a> records a whiter <a class="k" data-k="pixel">pixel</a>.</p></div>
+  <div><h3 style="margin:0">The method</h3><p style="margin:2px 0;color:var(--mut)">Our own transparent algorithm: <a class="k" data-k="contrast">local contrast</a> → <a class="k" data-k="threshold">threshold</a> → <a class="k" data-k="shape">shape rules</a>. No black box; each step can be adjusted.</p></div>
+  <div><h3 style="margin:0">The insight</h3><p style="margin:2px 0;color:var(--mut)">Every detector trades <a class="k" data-k="tradeoff">sensitivity against false alarms</a>. Tune it yourself and see why.</p></div>
+ </div>
+</section>
+
+<h2 id="learn">Physics: why bones are white</h2>
+<p class="sub">Each dot is an X-ray <a class="k" data-k="photon">photon</a>. Thicker or denser (<a class="k" data-k="density">density</a>) material <a class="k" data-k="absorb">absorbs</a> more; the <a class="k" data-k="detector">detector</a> turns what arrives into a pixel. Drag thickness.</p>
+<canvas class="sim" id="beam" width="520" height="170"></canvas>
+<div class="sl" style="max-width:520px">Thickness<input type="range" min="0.5" max="6" step="0.5" value="3" oninput="setTh(+this.value)"><b id="thv">3 cm</b></div>
+<div class="guide" id="beamR" style="max-width:520px"></div>
+
+<h2 id="fails">When the algorithm fails (and why)</h2>
+<p class="sub">Every detector makes mistakes. Press a button to reproduce each one in the Explorer.</p>
+<div class="grid fail">
+<div class="card"><div class="n">FALSE ALARM</div><h3>Flags something that is not there</h3><p>Healthy image, T=24. A faint bump is just brighter than T. The algorithm measures brightness and shape only; it cannot know the bump is noise. <b>Fix:</b> raise T.</p><button onclick="demo(1,24)">Show me ▸</button></div>
+<div class="card"><div class="n">MISSED SPOT</div><h3>Real spot not found</h3><p>T=44. The real spots are only about 30–40 brighter than their surroundings, so they fall below the cut-off. <b>Fix:</b> lower T.</p><button onclick="demo(2,44)">Show me ▸</button></div>
+<div class="card"><div class="n">MERGED REGION</div><h3>T too low, spot disappears</h3><p>T=8. So many pixels pass that the spot touches a neighbouring rib and they become one long region, which the shape rule rejects. Lower is not always better.</p><button onclick="demo(0,8)">Show me ▸</button></div>
+</div>
+<h2>Go deeper</h2>
+<details><summary>Why compare with neighbours, not just brightness?</summary><p>Bone is brighter than any spot, so "bright = bad" fails. A spot matters when it is brighter than <i>its own surroundings</i>.</p></details>
+<details><summary>Why subtract two averages?</summary><p>Small average (5×5) kills noise. Big average (R) is the slow body shading. Small − big is a <a class="k" data-k="bandpass">band-pass filter</a>: keeps only spot-sized features.</p></details>
+<details><summary>Why does it still make mistakes?</summary><p>Ribs crossing lungs and noise look bright. Shape rules remove many, not all. Real systems use far more features, and doctors decide.</p></details>
+
+<h2 id="meanings">Key terms · tap any highlighted word to jump here</h2>
+<p class="sub">One-line definitions of every mechanism.</p>
+<div class="grid gl">
+<div class="card" id="g-photon"><div class="n">PHYSICS</div><h3>Photon</h3><p>One packet of X-ray energy. Millions cross the body every second.</p></div>
+<div class="card" id="g-density"><div class="n">PHYSICS</div><h3>Density</h3><p>How tightly matter is packed. Bone is dense; lung is mostly air.</p></div>
+<div class="card" id="g-detector"><div class="n">PHYSICS</div><h3>Detector</h3><p>The sensor behind the body. It counts arriving photons; fewer photons = whiter pixel.</p></div>
+<div class="card" id="g-falsealarm"><div class="n">DEEPER</div><h3>False alarm</h3><p>A flagged region that is not a real spot. Lowering T creates more of them.</p></div>
+<div class="card" id="g-absorb"><div class="n">PHYSICS</div><h3>Absorption</h3><p>Matter takes X-ray energy. Denser or thicker = more absorbed: <code>I = I₀·e^(−μx)</code>. Less reaches the detector → whiter pixel.</p></div>
+<div class="card" id="g-pixel"><div class="n">DATA</div><h3>Pixel</h3><p>One tiny square, stored as a number: <code>0</code> black … <code>255</code> white. The computer only sees numbers.</p></div>
+<div class="card" id="g-noise"><div class="n">DATA</div><h3>Noise</h3><p>Random speckle from the detector. Averaging nearby pixels cancels it.</p></div>
+<div class="card" id="g-avg"><div class="n">STEP A–B</div><h3>Local average</h3><p>Mean brightness of a window around a pixel. Our estimate of "normal here". Window size = <code>R</code>.</p></div>
+<div class="card" id="g-contrast"><div class="n">STEP C</div><h3>Local contrast</h3><p><code>diff = smooth − background</code>. Positive = brighter than its surroundings.</p></div>
+<div class="card" id="g-threshold"><div class="n">STEP D</div><h3>Threshold T</h3><p>Cut-off. diff &gt; T → candidate pixel. Low T finds more, but also more false alarms.</p></div>
+<div class="card" id="g-blob"><div class="n">STEP E</div><h3>Blob</h3><p>Touching candidate pixels grouped into one region (flood fill).</p></div>
+<div class="card" id="g-shape"><div class="n">STEP E</div><h3>Shape rules</h3><p>Spots are round, ribs are long arcs. <code>aspect = long side ÷ short side</code>. Aspect &gt; 1.8 or low fill → rejected.</p></div>
+<div class="card" id="g-roi"><div class="n">STEP 0</div><h3>Region of interest</h3><p>Only the dark, air-filled lung area is analysed (two biggest dark regions). Bone and heart would cause false alarms.</p></div>
+<div class="card" id="g-tradeoff"><div class="n">DEEPER</div><h3>Sensitivity vs false alarms</h3><p>Catching every real spot raises false alarms. Every detector balances both.</p></div>
+<div class="card" id="g-bandpass"><div class="n">DEEPER</div><h3>Band-pass filter</h3><p>Keeps features of one size range: drops tiny noise and huge slow shading.</p></div>
+<div class="card" id="g-explain"><div class="n">TRUST</div><h3>Explainability</h3><p>The algorithm shows <i>why</i>: brightness, size, shape evidence per region. No hidden decision.</p></div>
+</div>
+<h2 id="honest">How this project is built (honest version)</h2>
+<p class="sub">What is real, what is simulated, what is tested.</p>
+<div class="grid">
+<div class="card"><div class="n">ONE ALGORITHM</div><h3>JavaScript + Python</h3><p>The website runs <code>core.js</code> in your browser. <code>xray_core.py</code> is the same steps written in Python. They do not run each other; instead an automated test checks that both give the same answers on the demo images.</p></div>
+<div class="card"><div class="n">SIMULATION</div><h3>Not a diagnosis</h3><p>All images are synthetic, drawn by code with spots we placed ourselves. We have not tested real patient X-rays. This is a teaching simulation of image-processing steps, not a medical tool.</p></div>
+<div class="card"><div class="n">TESTED</div><h3>Key tests</h3><p>Healthy image, weak contrast, fake signals and JS = Python. One test shows an honest limit: very faint spots are missed.</p></div>
+</div>
+<h3 style="margin-top:22px">Python and JavaScript: what is the same, what differs</h3>
+<div style="overflow-x:auto"><table><tr><th></th><th>JavaScript (<code>core.js</code>)</th><th>Python (<code>xray_core.py</code>)</th><th>Same?</th></tr>
+<tr><td>Steps</td><td>ROI → smooth → average → difference → T → blobs</td><td>The same 5 steps</td><td class="ok">Yes</td></tr>
+<tr><td>Settings</td><td>R, T, min/max size, max aspect</td><td>Identical values</td><td class="ok">Yes</td></tr>
+<tr><td>Images</td><td>Seeded generator</td><td>Same generator, same seed</td><td class="ok">Same image</td></tr>
+<tr><td>Result</td><td>Flagged spots + reasons</td><td>Same spots (tested)</td><td class="ok">Yes</td></tr>
+<tr><td>Where it runs</td><td>In the browser, live sliders and animation</td><td>In the terminal</td><td class="bad">Different</td></tr>
+<tr><td>How it computes</td><td>Loops over pixels (typed arrays)</td><td>Whole-image maths (numpy)</td><td class="bad">Different</td></tr>
+<tr><td>Role</td><td>Teaches and shows</td><td>Checks and tests</td><td class="bad">Different</td></tr></table></div>
+<p class="foot"><b>No AI model, no sign-in, no download.</b> Every number on this page is computed live by our own code in your browser. Team 92 · Junior Hackathon. Images are synthetic, generated by code. Teaching tool only, never a medical device.</p>
+</div>
+
+<div id="game" hidden>
+ <div class="gh"><b id="gt"></b><button onclick="closeGame()">✕ Close</button></div>
+ <div class="gb"><canvas id="cv" width="300" height="360"></canvas><div class="insp" id="insp">Tap the image to learn what you touched</div><div class="guide" id="guide"></div><div id="ctl"></div></div>
+</div>
+
+<script>
+/* ===== ALGORITHM (same code as core.js / xray_core.py) ===== */
+/* ============================================================
+   X-RAY LAB · core.js  — the whole algorithm, no drawing code.
+   Same steps exist in xray_core.py (Python). Tests check they agree.
+
+   PIPELINE (explain this to the judges in 5 lines):
+     0. ROI      keep only the dark, air-filled lung area
+     1. smooth   5x5 average of each pixel          (kills noise)
+     2. average  (2R+1) window average              (what is "normal here")
+     3. diff     smooth - average                   (brighter than neighbours?)
+     4. T        diff > T inside ROI -> candidate pixel
+     5. blobs    group touching candidates, then judge size and shape
+   ============================================================ */
+
+const W = 300, H = 360;                 // image size in pixels
+const CASES = [[7, 1], [21, 0], [33, 2], [58, 1]];   // [seed, number of real spots]
+
+// Every "magic number" has a name, so each one can be explained.
+const CFG = {
+  SMOOTH_R: 2,        // step 1: 5x5 window
+  MIN_AREA: 15,       // smaller than this = noise
+  MAX_AREA: 600,      // bigger than this = not a spot
+  MAX_ASPECT: 1.8,    // long side / short side; ribs are much longer than 1.8
+  MIN_FILL: 0.5,      // blob area / bounding box area (irregular blobs fail)
+  MATCH_DIST: 16,     // a flag within 16px of a real spot counts as a hit
+};
+
+/* ---------- tiny random generator: same seed -> same image ---------- */
+function rng(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647 }
+const G = (x, y, cx, cy, sx, sy) => Math.exp(-(((x - cx) / sx) ** 2 + ((y - cy) / sy) ** 2));  // soft round bump
+
+/* ---------- SYNTHETIC X-RAY (made by code, not a real patient) ----------
+   opts.gain  = how bright the real spots are (default 42)
+   opts.noise = detector noise strength        (default 14)            */
+function makeXray(seed, n, opts = {}) {
+  const gain = opts.gain ?? 42, noise = opts.noise ?? 14;
+  const r = rng(seed), g = new Float32Array(W * H), truth = [], decoys = [];
+  for (let i = 0; i < n; i++) truth.push({ x: (i % 2 ? 198 : 102) + (r() - .5) * 34, y: 135 + r() * 95, r: 5 + r() * 3 });
+  for (let i = 0; i < 2; i++) decoys.push({ x: (i ? 198 : 102) + (r() - .5) * 36, y: 125 + r() * 110 });   // faint fake spots
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const m = 1 - ((x - 150) / 122) ** 2 - ((y - 190) / 176) ** 2;          // m>0 = inside the body ellipse
+    let v = m > 0 ? 25 + 70 * Math.min(1, m * 4) : 12;                      // soft tissue / air outside
+    if (m > 0) {
+      v -= 48 * Math.exp(-((((x - 102) / 50) ** 4) + (((y - 190) / 88) ** 4)))      // left lung: darker
+         + 48 * Math.exp(-((((x - 198) / 50) ** 4) + (((y - 190) / 88) ** 4)));     // right lung: darker
+      v += 24 * G(x, y, 172, 238, 40, 46) + 70 * Math.exp(-(((x - 150) / 9) ** 2)); // heart, spine
+      if (Math.abs(x - 150) > 12) for (let i = 0; i < 8; i++) {                      // 8 curved ribs
+        const yy = 75 + i * 26 + (x - 150) ** 2 * .0045;
+        v += 34 * Math.exp(-(((y - yy) / 4) ** 2)) * Math.min(1, m * 5);
+      }
+      for (const t of truth) v += gain * G(x, y, t.x, t.y, t.r, t.r);                // REAL spots
+      for (const t of decoys) v += 13 * G(x, y, t.x, t.y, 4, 4);                     // faint decoys
+    }
+    g[y * W + x] = Math.max(0, Math.min(255, v + (r() - .5) * noise));               // add noise, clamp 0..255
+  }
+  return { g, truth };
+}
+
+/* ---------- box average of radius r (fast, via an "integral image") ---------- */
+function box(src, r) {
+  const S = new Float64Array((W + 1) * (H + 1)), o = new Float32Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++)
+    S[(y + 1) * (W + 1) + x + 1] = src[y * W + x] + S[y * (W + 1) + x + 1] + S[(y + 1) * (W + 1) + x] - S[y * (W + 1) + x];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const x0 = Math.max(0, x - r), x1 = Math.min(W, x + r + 1), y0 = Math.max(0, y - r), y1 = Math.min(H, y + r + 1);
+    o[y * W + x] = (S[y1 * (W + 1) + x1] - S[y0 * (W + 1) + x1] - S[y1 * (W + 1) + x0] + S[y0 * (W + 1) + x0]) / ((x1 - x0) * (y1 - y0));
+  }
+  return o;
+}
+
+/* ---------- group touching pixels (flood fill). mask -> list of pixel-index lists ---------- */
+function regions(mask) {
+  const seen = new Uint8Array(W * H), out = [];
+  for (let s = 0; s < W * H; s++) {
+    if (seen[s] || !mask[s]) continue;
+    const q = [s], px = []; seen[s] = 1;
+    while (q.length) {
+      const p = q.pop(), x = p % W; px.push(p);
+      for (const k of [p - 1, p + 1, p - W, p + W]) {
+        if (k < 0 || k >= W * H || seen[k] || !mask[k] || Math.abs(k % W - x) > 1) continue;
+        seen[k] = 1; q.push(k);
+      }
+    }
+    out.push(px);
+  }
+  return out;
+}
+
+/* ---------- STEP 0: find the lungs = the two biggest dark regions inside the body ---------- */
+const ROIC = new WeakMap();
+function lungs(g) {
+  if (ROIC.has(g)) return ROIC.get(g);
+  const rs = box(g, 10), bd = box(g, 3), bm = new Float32Array(W * H), m = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) bm[i] = bd[i] > 30 ? 1 : 0;           // body = not black
+  const core = box(bm, 20);                                              // shrink body so skin edge is ignored
+  for (let i = 0; i < W * H; i++) m[i] = core[i] > .999 && rs[i] < 70 ? 1 : 0;   // dark AND inside body
+  const top = regions(m).sort((a, b) => b.length - a.length).slice(0, 2), roi = new Uint8Array(W * H);
+  for (const px of top) for (const p of px) roi[p] = 1;
+  const dl = box(roi, 8), dm = new Float32Array(W * H);                  // "closing": fill small holes
+  for (let i = 0; i < W * H; i++) dm[i] = dl[i] > 0 ? 1 : 0;
+  const er = box(dm, 8);
+  for (let i = 0; i < W * H; i++) roi[i] = er[i] > .999 ? 1 : 0;
+  ROIC.set(g, roi); return roi;
+}
+
+/* ---------- STEPS 1-5: the detector. Returns every blob with a plain-English reason. ---------- */
+function analyze(g, R, T) {
+  const sm = box(g, CFG.SMOOTH_R), bg = box(g, R), roi = lungs(g), d = new Float32Array(W * H), c = new Uint8Array(W * H), blobs = [];
+  for (let i = 0; i < W * H; i++) { d[i] = sm[i] - bg[i]; c[i] = d[i] > T && roi[i] ? 1 : 0; }   // steps 3-4
+  for (const px of regions(c)) {                                                                  // step 5
+    let sx = 0, sy = 0, sd = 0, x0 = W, x1 = 0, y0 = H, y1 = 0;
+    for (const p of px) { const x = p % W, y = (p / W) | 0; sx += x; sy += y; sd += d[p]; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const a = px.length, w = x1 - x0 + 1, h = y1 - y0 + 1, asp = Math.max(w, h) / Math.min(w, h), fill = a / (w * h);
+    let v = 0, why;
+    if (a < CFG.MIN_AREA) why = "too small → noise";
+    else if (asp > CFG.MAX_ASPECT) why = "long & thin (ratio " + asp.toFixed(1) + ") → rib or edge";
+    else if (a > CFG.MAX_AREA || fill < CFG.MIN_FILL) why = "too big / irregular → not a spot";
+    else { v = 1; why = "round, compact, bright → suspicious"; }
+    const df = sd / a;
+    blobs.push({ x: sx / a, y: sy / a, a, w, h, v, why, diff: df,
+      ev: [Math.min(1, df / (2 * T)), Math.max(0, 1 - (asp - 1) / 1.5), a >= CFG.MIN_AREA && a <= CFG.MAX_AREA ? 1 : .3] });   // evidence bars
+  }
+  return { bg, d, c, blobs };
+}
+
+
+/* ===== PAGE: drawing, sliders, game ===== */
+const $=id=>document.getElementById(id); /* algorithm: see core.js (W, H, CASES, makeXray, analyze) */
+function setCase(s,i){s.cs=i%CASES.length;const x=makeXray(...CASES[s.cs],{gain:s.gain,noise:s.noise});s.g=x.g;s.truth=x.truth;calc(s)}
+function calc(s){s.A=analyze(s.g,s.R,s.T);const sus=s.A.blobs.filter(b=>b.v),near=(b,t)=>Math.hypot(b.x-t.x,b.y-t.y)<16;
+ s.hit=s.truth.filter(t=>sus.some(b=>near(b,t))).length;s.fa=sus.filter(b=>!s.truth.some(t=>near(b,t))).length}
+function paint(c,s){
+ const x=c.getContext('2d'),im=x.createImageData(W,H),D=im.data,v=s.view,A=s.A;
+ for(let i=0;i<W*H;i++){let r,g,b;const o=s.g[i];
+  if(v==0||v>=3){const k=v>=3?.6:1;r=o*.8*k;g=o*.95*k;b=(o*1.1+8)*k;if(v>=3&&A.c[i]){r=255;g=170;b=50}}
+  else if(v==1){const m=A.bg[i];r=m*.8;g=m*.95;b=m*1.1+8}
+  else{const d=A.d[i]*6;if(d>0){r=Math.min(255,d);g=Math.min(255,d*.7);b=0}else{r=0;g=0;b=Math.min(255,-d*.6)}}
+  D[i*4]=r;D[i*4+1]=g;D[i*4+2]=b;D[i*4+3]=255}
+ x.putImageData(im,0,0);x.lineWidth=2;x.font='bold 12px system-ui';
+ if(v==4){let n=0;for(const b of A.blobs){if(b.a<15)continue;n++;x.strokeStyle=x.fillStyle=b.v?'#5af0b0':'#9aa8c0';x.setLineDash(b.v?[]:[4,3]);
+  if(b.v){x.beginPath();x.arc(b.x,b.y,Math.max(b.w,b.h)/2+5,0,7);x.stroke()}else x.strokeRect(b.x-b.w/2-3,b.y-b.h/2-3,b.w+6,b.h+6);x.setLineDash([]);x.fillText(n,b.x+b.w/2+5,b.y-b.h/2)}}
+ x.setLineDash([]);
+ if(s.guess){x.strokeStyle='#4fd1ff';x.beginPath();x.arc(s.guess.x,s.guess.y,12,0,7);x.stroke()}
+ if(s.reveal)for(const t of s.truth){x.strokeStyle='#fff';x.setLineDash([3,3]);x.beginPath();x.arc(t.x,t.y,t.r+9,0,7);x.stroke()}
+ x.setLineDash([]);
+}
+function cards(s){let n=0;const L=s.A.blobs.filter(b=>b.a>=15).map(b=>({b,n:++n})).sort((p,q)=>q.b.v-p.b.v),bar=(l,v)=>`<div class="ev"><i>${l}</i><u><s style="width:${Math.round(v*100)}%"></s></u></div>`;
+ return L.slice(0,5).map(({b,n})=>`<div class="card"><b class="${b.v?'ok':''}">#${n} ${b.v?'FLAGGED':'rejected'}</b> · +${b.diff.toFixed(0)} brighter · ${b.a}px<br>${b.why}${bar('brightness',b.ev[0])}${bar('roundness',b.ev[1])}${bar('size fit',b.ev[2])}</div>`).join('')+(L.length>5?`<div class="card">+${L.length-5} more regions</div>`:'')||'<div class="card">Nothing passed T. Lower it.</div>'}
+function inspect(c,s,el,cb){c.onclick=e=>{const r=c.getBoundingClientRect(),x=Math.max(0,Math.min(W-1,Math.round((e.clientX-r.left)/r.width*W))),y=Math.max(0,Math.min(H-1,Math.round((e.clientY-r.top)/r.height*H))),i=y*W+x;
+ el.innerHTML=describe(x,y,s,i,el.id=='exI');if(cb)cb(x,y)}}
+const PARTS={spot:['Bright round spot','A dense lump inside the lung (like a nodule). Round and brighter than its neighbours, so the algorithm flags it.'],spine:['Spine','Stack of bones protecting the nerve cord. Very dense, so very white.'],rib:['Rib','Curved bone shielding the lungs. Dense = white arc. Long and thin, so the algorithm rejects it.'],heart:['Heart','Muscle full of blood. Medium density, so mid-grey.'],lung:['Lung','Filled with air, so X-rays pass through and it looks dark. Our search area.'],soft:['Soft tissue','Muscle and fat. Absorbs some X-rays, so mid-grey.'],out:['Outside the body','Only air here, so almost black.']};
+function describe(x,y,s,i,link){
+ const m=1-((x-150)/122)**2-((y-190)/176)**2;let k='soft';
+ if(m<=0)k='out';
+ else if((link||s.reveal)&&s.truth.some(t=>Math.hypot(x-t.x,y-t.y)<t.r+4))k='spot';
+ else if(Math.abs(x-150)<11)k='spine';
+ else if(Math.abs(x-150)>12&&[0,1,2,3,4,5,6,7].some(n=>Math.abs(y-(75+n*26+(x-150)**2*.0045))<6))k='rib';
+ else if(((x-172)/40)**2+((y-238)/46)**2<1)k='heart';
+ else if(((x-102)/50)**4+((y-190)/88)**4<1||((x-198)/50)**4+((y-190)/88)**4<1)k='lung';
+ const p=PARTS[k],d=s.A.d[i];
+ return `<b>${p[0]}</b>: ${p[1]}${link?' <a class="k" data-k="absorb">Why?</a>':''}<small>Math: brightness ${s.g[i].toFixed(0)}/255 · neighbours ${s.A.bg[i].toFixed(0)} · difference ${d>=0?'+':''}${d.toFixed(0)}</small>`}
+/* keyword + nav jumps */
+function closeGame(){$('game').hidden=true}
+document.addEventListener('click',e=>{const k=e.target.closest('[data-k]'),n=e.target.closest('[data-go]');if(!k&&!n)return;e.preventDefault();closeGame();
+ setTimeout(()=>{if(n)return $(n.dataset.go).scrollIntoView({behavior:'smooth'});const t=$('g-'+k.dataset.k);t.scrollIntoView({behavior:'smooth',block:'center'});t.classList.remove('flash');void t.offsetWidth;t.classList.add('flash')},50)});
+/* physics sim: Beer-Lambert */
+let th=3,em,ar;const MAT=[['Air (lung)',.03,'#12314d'],['Soft tissue',.3,'#6b4a5c'],['Bone',1,'#e8e2cf']];
+function setTh(v){th=v;em=[1,1,1];ar=[0,0,0];$('thv').textContent=v+' cm'}
+setTh(3);
+(function(){const x=$('beam').getContext('2d'),ph=[];let fr=0;
+ function f(){x.fillStyle='#050912';x.fillRect(0,0,520,170);
+  MAT.forEach((m,i)=>{const y=12+i*52;x.fillStyle='#0b1424';x.fillRect(0,y,520,40);x.fillStyle=m[2];x.globalAlpha=.85;x.fillRect(200,y,th*20,40);x.globalAlpha=1;
+   x.fillStyle='#8a9bb8';x.font='12px system-ui';x.fillText(m[0],206,y+24);
+   const b=255*(1-ar[i]/Math.max(em[i],1));x.fillStyle=`rgb(${b},${b},${b})`;x.fillRect(440,y,70,40)});
+  x.fillStyle='#8a9bb8';x.fillText('X-ray source',6,164);x.fillText('Image pixel',446,164);
+  if(Math.random()<.7){const i=(Math.random()*3)|0;em[i]++;ph.push({i,x:0,d:null,s:0})}
+  for(let k=ph.length-1;k>=0;k--){const p=ph[k];p.x+=4;
+   if(p.d===null&&p.x>=200){p.d=Math.random()>Math.exp(-MAT[p.i][1]*th);p.s=200+Math.random()*th*20}
+   if(p.d&&p.x>p.s){ph.splice(k,1);continue}
+   if(p.x>=440){ar[p.i]++;ph.splice(k,1);continue}
+   x.fillStyle='#4fd1ff';x.beginPath();x.arc(p.x,32+p.i*52+(Math.random()-.5)*16,2.4,0,7);x.fill()}
+  for(let i=0;i<3;i++){em[i]*=.997;ar[i]*=.997}
+  if(++fr%20==0)$('beamR').innerHTML='Reaches detector: '+MAT.map(m=>`<b>${m[0]} ${(100*Math.exp(-m[1]*th)).toFixed(0)}%</b>`).join(' · ')+'<br>Fewer photons = <b>whiter pixel</b>. That is why bone is white.';
+  requestAnimationFrame(f)}f()})();
+/* explorer */
+const E={view:4,R:14,T:28,gain:42,noise:14},HINT=["Original: each pixel is a number 0–255.","Average: every pixel replaced by the mean of a big window (R).","Difference: pixel − average. Orange = brighter than surroundings.","Threshold: inside the lung area, pixels with diff &gt; T turn amber.","Verdict: blobs judged by size and shape. Green = flagged, dashed = rejected."];
+setCase(E,0);inspect($('exC'),E,$('exI'));
+function exUI(){calc(E);paint($('exC'),E);$('rv').textContent=E.R;$('tv').textContent=E.T;
+ $('exT').innerHTML=["1 Original","2 Average","3 Difference","4 Threshold","5 Verdict"].map((n,i)=>`<button class="${i==E.view?'on':''}" onclick="E.view=${i};exUI()">${n}</button>`).join('');
+ $('exH').innerHTML=HINT[E.view];$('m1').textContent=E.hit+' / '+E.truth.length;$('m2').textContent=E.fa;$('exR').innerHTML=cards(E);$('sR').value=E.R;$('sT').value=E.T;$('sG').value=E.gain;$('sN').value=E.noise;$('gv').textContent=E.gain;$('nv').textContent=E.noise;why()}
+function regen(){const x=makeXray(...CASES[E.cs],{gain:E.gain,noise:E.noise});E.g=x.g;E.truth=x.truth;exUI()}
+/* live explanation: why does a spot appear or vanish when T changes? */
+function why(){const px=E.A.c.reduce((a,b)=>a+b,0),big=E.A.blobs.some(b=>!b.v&&b.a>300),
+ L=E.truth.map((t,i)=>{const dv=E.A.d[Math.round(t.y)*W+Math.round(t.x)];return `Real spot ${i+1}: brightness difference <b>+${dv.toFixed(0)}</b> ${dv>E.T?'&gt;':'≤'} T (${E.T}) → ${dv>E.T?'<span class="ok">passes</span>':'<span class="bad">dropped</span>'}`});
+ $('exWhy').innerHTML=`<b>Why?</b> T=${E.T} lets <b>${px}</b> pixels through. A spot survives only if its difference is above T.<br>${L.join('<br>')||'No real spot in this image.'}`+(big?'<br><span class="bad">Many pixels passed: the spot joined neighbouring bright areas (ribs) into one big or long region → rejected by the size/shape rule.</span>':'')+(E.fa?`<br><span class="bad">${E.fa} false alarm: a faint bump is brighter than T, but it is not a real spot.</span>`:'')}
+function demo(cs,t){setCase(E,cs);E.T=t;E.view=4;exUI();$('explore').scrollIntoView({behavior:'smooth'})}
+exUI();
+/* doctor game */
+const Gm={R:14,T:28,view:0,step:1},SC={d:0,a:0};
+inspect($('cv'),Gm,$('insp'),(x,y)=>{if(Gm.step==1){Gm.guess={x,y};Gm.none=false;paint($('cv'),Gm)}});
+function openGame(){$('game').hidden=false;SC.d=SC.a=0;load(0)}
+function load(i){setCase(Gm,i);Gm.step=1;Gm.view=0;Gm.guess=null;Gm.none=false;Gm.reveal=false;$('gt').textContent=`Case ${Gm.cs+1}/${CASES.length}`;paint($('cv'),Gm);gui()}
+function reveal(){Gm.step=2;Gm.view=4;Gm.reveal=true;const n=Gm.truth.length,pOK=n==0?Gm.none:!!(Gm.guess&&Gm.truth.some(t=>Math.hypot(Gm.guess.x-t.x,Gm.guess.y-t.y)<22)),aOK=Gm.hit==n&&Gm.fa==0;
+ if(pOK)SC.d++;if(aOK)SC.a++;Gm.p=pOK;Gm.q=aOK;paint($('cv'),Gm);gui()}
+function gui(){const g=$('guide'),c=$('ctl');
+ if(Gm.step==1){g.innerHTML="<b>You are the doctor.</b> Tap the spot that looks too bright and round, or say none. Tap anywhere to learn what that part is.";
+  c.innerHTML=`<div class="row"><button onclick="Gm.none=true;Gm.guess=null;paint($('cv'),Gm);this.classList.add('on')">No spot</button><button class="go" onclick="reveal()">Run algorithm ▶</button></div>`}
+ else{g.innerHTML=`<b>Doctor ${SC.d} – ${SC.a} Algorithm</b><br>You: <span class="${Gm.p?'ok':'bad'}">${Gm.p?'correct':'missed'}</span> · Algorithm: <span class="${Gm.q?'ok':'bad'}">${Gm.q?'correct':'missed or false alarm'}</span> (found ${Gm.hit}/${Gm.truth.length}, ${Gm.fa} false). White dashes = real spots.`;
+  c.innerHTML=`<div class="res">${cards(Gm)}</div><div class="row"><button data-go="explore">Tune R and T ▸</button><button class="go" onclick="load(Gm.cs+1)">Next case ▶</button></div><div class="guide" style="border-color:var(--am)">Training only. Real diagnosis needs a radiologist.</div>`}}
+</script></body></html>
